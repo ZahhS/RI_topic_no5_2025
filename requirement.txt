@@ -1,0 +1,7 @@
+gensim
+nltk
+scikit-learn
+dill
+joblib
+numpy
+re
