@@ -1,0 +1,74 @@
+DOnc ici je vais expliquer ce qu'on a comme code et les foncitons réalisée:
+
+POUR LA DATASET:
+"fold-0-train.pages.cbor-outlines.cbor" contient tous les requetes hiérarchiques comme 
+Page: Chocolate
+   ↳ Subtopic: Etymology
+   ↳ Subtopic: History
+   ↳ Subtopic: History / Mesoamerican usage
+   ↳ Subtopic: History / European adaptation
+   ↳ Subtopic: History / Storage
+   ↳ Subtopic: Nutrition and research
+   ↳ Subtopic: Nutrition and research / Nutrition
+   ↳ Subtopic: Nutrition and research / Research
+   ↳ Subtopic: Labeling
+   ↳ Subtopic: Industry
+   ↳ Subtopic: Industry / Manufacturers
+   ↳ Subtopic: Industry / Human trafficking of child labourers
+   ↳ Subtopic: Industry / Fair trade
+   ↳ Subtopic: Usage and consumption
+   ↳ Subtopic: Popular culture
+   ↳ Subtopic: Popular culture / Religious and cultural links
+   ↳ Subtopic: Popular culture / Books and film
+
+on arrange tous ça pour avoir des requêtes de la forme R(root)-I(intermediate)- H(heading) et stocke ça dans queries.pkl
+avec 2/3 manips, on obtient un ficher queries.pkl avec pour chaque requete une forme comme ça : 
+{'enwiki:Chocolate/Etymology': ('Chocolate / Etymology', 'Chocolate', ('Etymology',))
+
+"fold-0-train.pages.cbor-paragraphs.cbor" contient les paragraphe des pages wikipédia de la forme suivante c'est stockée dans document.pkl:
+'818fe267b2ccb80106ae85ebd854af736260c3d7': "Structured investment was very profitable to the agencies and by 2007 accounted for 
+just under half of Moody's total ratings revenue and all of the revenue growth. But profits were not guaranteed, and issuers 
+played the agencies off one another, 'shopping' around to find the best ratings, sometimes openly threatening to cut off business 
+after insufficiently generous ratings. Thus there was a conflict of interest between accommodating clients – for whom higher 
+ratings meant higher earnings – and accurately rating the debt for the benefit of the debt buyer/investors – who provided zero 
+revenue to the agencies."
+
+"fold-0-train.pages.cbor-hierarchical.qrels" contient les jugements de pertinence(1 si c'est pertinent) entre les requetes et les paragraphes
+c'est stockée dans relevance.pkl de la forme suivante:
+enwiki:Allergy/Signs%20and%20symptoms 0 590030e571d0e86493d7cc03d1cc9269e93a3e84 1 (le 0 ne serrt à rien)
+
+
+PUIS ON A LES FICHIERS D'ENTITES :
+
+toplevel.entity.qrels <- contient les entitées pertiences pour chaque RIH
+
+hierarchical.entity.qrels <- entitées associées seuelmetn à la racine 
+
+article.entity.qrels <-les entitées de page wikipédia
+
+CLASSE/BASELINE :
+
+-> RelevanceBaseline:  prends seulement les requêtes textuelles c'ets que des mots quoi pas d'enties.  
+                        les requets sont transformes en vecteur avce TFIDF
+
+    -> RIH_QL: on concatène racine, Intermédiaire et Heading(H) et BOW probabiliste et on compare la requets aux 
+                documents avec la vraisemblance
+    -> RIH_cosine: même chose mais similarité cosinus entre la requete et chaque doc
+
+
+-> EmbeddingBaseline : vecteur de Word2VEc pour un txt on calcule la moyenne des embedding.
+                    moyenne des embeddings W2V pour les mots RIH et same pour les doc pui similarité cosinus
+                    avec expansion <-pour cq heading on cherche mots similaire via W2V et du coup on a une requete enrichie
+
+    -> expansion avec noms d'enties de heading :  pour chaque feuille, on extrait les entite.puis moyenne des vecteurs
+    -> expansion avec alias d'entites racines : même chose avec avec la racine  pas la feuille
+
+->expansion par ID d'entites: pour chaque R, I ,H on récupère entitées associés. puison récupère le vectuer set on moyenne.
+
+
+
+
+
+
+expansion:
+
